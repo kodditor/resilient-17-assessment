@@ -5,6 +5,7 @@ const modelName = 'creatorCards';
 const schemaConfig = {
   _id: { type: SchemaTypes.ULID },
   title: { type: SchemaTypes.String, index: true },
+  description: { type: SchemaTypes.String },
   slug: { type: SchemaTypes.String, unique: true, index: true },
   creator_reference: { type: SchemaTypes.String, index: true },
   links: { type: SchemaTypes.Array, default: [] },

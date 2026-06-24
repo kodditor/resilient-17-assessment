@@ -29,6 +29,50 @@ const spec = `root {
 
 const parsedSpec = validator.parse(spec);
 
+function sanitizeString(slug, options = { allowDashes: true, allowUnderscores: true }){
+  let tempSlug = "";
+
+  // Manually parse for valid characters
+  let allowed =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  if(options.allowDashes){
+    allowed = allowed.concat("-");
+  }
+
+  if(options.allowUnderscores){
+    allowed = allowed.concat("_");
+  }
+
+  for (const char of slug) {
+    if (allowed.includes(char)) {
+      tempSlug = tempSlug.concat(char);
+    }
+  }
+  return tempSlug
+}
+
+function validateString(slug, options = { allowDashes: true, allowUnderscores: true }){
+  let allowed =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  if(options.allowDashes){
+    allowed = allowed.concat("-");
+  }
+
+  if(options.allowUnderscores){
+    allowed = allowed.concat("_");
+  }
+
+  for (const char of slug) {
+    if (!allowed.includes(char)) {
+      return false;
+    }
+  }
+
+  return true
+}
+
 async function createCreatorCard(serviceData, options = {}) {
   let response;
 
@@ -37,10 +81,7 @@ async function createCreatorCard(serviceData, options = {}) {
   try {
 
     if(!data.slug){
-      let slug = data.title
-        .trim()
-        .toLowerCase()
-        .replace(" ", '-');
+      let slug = sanitizeString(data.title?.toLowerCase().split(" ").join("-"));
 
       if(slug.length < 5){
         slug = slug + '-' + generateUUID().substring(0, 6);
@@ -51,7 +92,7 @@ async function createCreatorCard(serviceData, options = {}) {
       while(isSlugTaken){
         let existingCreatorCard = await CreatorCard.findOne({ query: { slug } });
         if(existingCreatorCard){
-          slug = slug + '-' + generateULID().substring(0, 6);
+          slug = slug + '-' + generateUUID().substring(0, 6);
         } else {
           isSlugTaken = false;
         }
@@ -60,6 +101,12 @@ async function createCreatorCard(serviceData, options = {}) {
       appLogger.info({ slug }, 'slug-generated');
       data.slug = slug;
     } else {
+
+      // we cannot let invalid characters come through
+      if(!validateString(data.slug)){
+        throwAppError(CreatorCardMessages.INVALID_SLUG, ERROR_CODE.VALIDATIONERR);
+      }
+
       // check if slug is already taken;
       let existingCreatorCard = await CreatorCard.findOne({ query: { slug: data.slug } });
       if(existingCreatorCard){
@@ -72,22 +119,37 @@ async function createCreatorCard(serviceData, options = {}) {
       throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.ACCESS_CODE_REQUIRED);
     }
 
-    if(data.access_type === 'public' && data.access_code){
+    if(data.access_code){
+      // we cannot let invalid characters come through
+      // just letters and numbers
+      if(!validateString(data.access_code, { allowDashes: false, allowUnderscores: false })){
+        throwAppError(CreatorCardMessages.INVALID_ACCESS_CODE, ERROR_CODE.VALIDATIONERR);
+      }
+    }
+
+    if(
+      (
+        !data.access_type ||
+        data.access_type === 'public'
+      ) && data.access_code
+    ){
       throwAppError(CreatorCardMessages.ACCESS_CODE_ON_PUBLIC_CARD, ERROR_CODE.ACCESS_CODE_ON_PUBLIC_CARD);
     }
     
-    data.links.forEach(link => {
-      if(!link.url.startsWith('http://') && !link.url.startsWith('https://')){
+    data.links?.forEach(link => {
+      if(!(link.url.startsWith('http://') || link.url.startsWith('https://'))){
         throwAppError(CreatorCardMessages.INVALID_URL, ERROR_CODE.VALIDATIONERR);
       }
     })
 
+    if(data.service_rates){
+      if(!data.service_rates.rates?.length){
+        throwAppError(CreatorCardMessages.NO_SERVICE_RATES, ERROR_CODE.VALIDATIONERR);
+      }
+    }
+
     data.service_rates?.rates?.forEach(rate => {
       if(!Number.isInteger(rate.amount)){
-        throwAppError(CreatorCardMessages.INVALID_AMOUNT, ERROR_CODE.VALIDATIONERR);
-      }
-
-      if(rate.amount < 0){
         throwAppError(CreatorCardMessages.INVALID_AMOUNT, ERROR_CODE.VALIDATIONERR);
       }
     })
