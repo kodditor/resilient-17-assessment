@@ -16,7 +16,7 @@ module.exports = createHandler({
 
     return {
       status: helpers.http_statuses.HTTP_200_OK,
-      message: 'Creator Card Retrieved Successfully',
+      message: 'Creator Card Retrieved Successfully.',
       data: response,
     };
   },

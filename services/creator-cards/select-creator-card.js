@@ -28,7 +28,7 @@ async function selectCreatorCard(serviceData, options = {}) {
     }
 
     if(creatorCard.access_type === 'private' && !data.access_code){
-      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.ACCESS_CODE_REQUIRED);
+      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED_FOR_PRIVATE_CARD, ERROR_CODE.ACCESS_CODE_REQUIRED_FOR_PRIVATE_CARD);
     }
 
     if(creatorCard.access_type === 'private' && data.access_code !== creatorCard.access_code){
