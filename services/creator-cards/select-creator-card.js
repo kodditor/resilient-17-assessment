@@ -20,19 +20,19 @@ async function selectCreatorCard(serviceData, options = {}) {
 
     const creatorCard = await CreatorCard.findOne({ query: { slug: data.slug, deleted: null } });
     if(!creatorCard){
-      throwAppError(CreatorCardMessages.SLUG_NOT_FOUND, ERROR_CODE.NF01);
+      throwAppError(CreatorCardMessages.SLUG_NOT_FOUND, ERROR_CODE.SLUG_NOT_FOUND);
     }
 
     if(creatorCard.status === 'draft'){
-      throwAppError(CreatorCardMessages.CARD_IN_DRAFT_STATUS, ERROR_CODE.NF02);
+      throwAppError(CreatorCardMessages.CARD_IN_DRAFT_STATUS, ERROR_CODE.CARD_IN_DRAFT_STATUS);
     }
 
     if(creatorCard.access_type === 'private' && !data.access_code){
-      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.AC03);
+      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.ACCESS_CODE_REQUIRED);
     }
 
     if(creatorCard.access_type === 'private' && data.access_code !== creatorCard.access_code){
-      throwAppError(CreatorCardMessages.ACCESS_CODE_INCORRECT, ERROR_CODE.AC04);
+      throwAppError(CreatorCardMessages.ACCESS_CODE_INCORRECT, ERROR_CODE.ACCESS_CODE_INCORRECT);
     }
 
     response = {

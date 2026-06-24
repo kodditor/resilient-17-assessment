@@ -243,6 +243,9 @@ function Server(serverConfig = {}) {
 
         responseComponents.statusCode = statusCode;
         responseComponents.body.status = 'error';
+        responseComponents.body.code = error.isApplicationError 
+          ? error.errorCode 
+          : 'ERR';
         responseComponents.body.message = error.isApplicationError
           ? error.message
           : 'Some error occured.';

@@ -3,7 +3,7 @@ const { throwAppError, ERROR_CODE } = require('@app-core/errors');
 const { appLogger } = require('@app-core/logger');
 const CreatorCardMessages = require('@app/messages/creator-card');
 const CreatorCard = require('@app/repository/creator-card');
-const generateULID = require('@app-core/randomness/ulid');
+const generateUUID = require('@app-core/randomness/uuid');
 
 const spec = `root {
   title string<trim|lengthBetween:3,100>
@@ -37,13 +37,13 @@ async function createCreatorCard(serviceData, options = {}) {
   try {
 
     if(!data.slug){
-      const slug = data.title
+      let slug = data.title
         .trim()
         .toLowerCase()
         .replace(" ", '-');
 
       if(slug.length < 5){
-        slug = slug + '-' + generateULID().substring(0, 6);
+        slug = slug + '-' + generateUUID().substring(0, 6);
       }
 
       let isSlugTaken = true;
@@ -64,16 +64,16 @@ async function createCreatorCard(serviceData, options = {}) {
       let existingCreatorCard = await CreatorCard.findOne({ query: { slug: data.slug } });
       if(existingCreatorCard){
         appLogger.error({ slug: data.slug }, 'slug-already-taken');
-        throwAppError(CreatorCardMessages.SLUG_ALREADY_TAKEN, ERROR_CODE.SL01);
+        throwAppError(CreatorCardMessages.SLUG_ALREADY_TAKEN, ERROR_CODE.SLUG_ALREADY_TAKEN);
       }
     }
 
     if(data.access_type === 'private' && !data.access_code){
-      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.AC01);
+      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.ACCESS_CODE_REQUIRED);
     }
 
     if(data.access_type === 'public' && data.access_code){
-      throwAppError(CreatorCardMessages.ACCESS_CODE_ON_PUBLIC_CARD, ERROR_CODE.AC04);
+      throwAppError(CreatorCardMessages.ACCESS_CODE_ON_PUBLIC_CARD, ERROR_CODE.ACCESS_CODE_ON_PUBLIC_CARD);
     }
     
     data.links.forEach(link => {

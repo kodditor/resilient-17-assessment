@@ -19,11 +19,11 @@ async function deleteCreatorCard(serviceData, options = {}) {
 
     const creatorCard = await CreatorCard.findOne({ query: { slug: data.slug, creator_reference: data.creator_reference } });
     if(!creatorCard){
-      throwAppError(CreatorCardMessages.SLUG_NOT_FOUND, ERROR_CODE.NF01);
+      throwAppError(CreatorCardMessages.SLUG_NOT_FOUND, ERROR_CODE.SLUG_NOT_FOUND);
     }
 
     if(creatorCard.deleted){
-      throwAppError(CreatorCardMessages.CARD_ALREADY_DELETED, ERROR_CODE.NF03);
+      throwAppError(CreatorCardMessages.CARD_ALREADY_DELETED, ERROR_CODE.CARD_ALREADY_DELETED);
     }
 
     await CreatorCard.deleteOne({ query: { _id: creatorCard._id }, options: { paranoid: true } });
