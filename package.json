@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test": "set USE_MOCK_MODEL=1 && mocha --recursive --require dotenv/config",
+    "test-macos": "USE_MOCK_MODEL=1 mocha --require tests/setup.js 'tests/**/*.test.js'",
     "prepare": "husky",
     "commitlint": "commitlint --edit",
     "sync-envs": "node sync-env-files"
