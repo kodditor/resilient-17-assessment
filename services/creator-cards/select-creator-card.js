@@ -1,7 +1,7 @@
 const validator = require('@app-core/validator');
 const { throwAppError, ERROR_CODE } = require('@app-core/errors');
 const { appLogger } = require('@app-core/logger');
-// const PaymentMessages = require('@app/messages/payment'); // Your message file
+const CreatorCardMessages = require('@app/messages/creator-card');
 const CreatorCard = require('@app/repository/creator-card');
 
 const spec = `root {
@@ -20,19 +20,19 @@ async function selectCreatorCard(serviceData, options = {}) {
 
     const creatorCard = await CreatorCard.findOne({ query: { slug: data.slug, deleted: null } });
     if(!creatorCard){
-      // TODO: throw error
+      throwAppError(CreatorCardMessages.SLUG_NOT_FOUND, ERROR_CODE.NF01);
     }
 
     if(creatorCard.status === 'draft'){
-      // TODO: throw error
+      throwAppError(CreatorCardMessages.CARD_IN_DRAFT_STATUS, ERROR_CODE.NF02);
     }
 
     if(creatorCard.access_type === 'private' && !data.access_code){
-      // TODO: throw error
+      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.AC03);
     }
 
     if(creatorCard.access_type === 'private' && data.access_code !== creatorCard.access_code){
-      // TODO: throw error
+      throwAppError(CreatorCardMessages.ACCESS_CODE_INCORRECT, ERROR_CODE.AC04);
     }
 
     response = {

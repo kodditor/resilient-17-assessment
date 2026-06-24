@@ -1,7 +1,6 @@
 const validator = require('@app-core/validator');
 const { throwAppError, ERROR_CODE } = require('@app-core/errors');
 const { appLogger } = require('@app-core/logger');
-// const PaymentMessages = require('@app/messages/payment');
 const CreatorCard = require('@app/repository/creator-card');
 
 const spec = `root {
@@ -20,7 +19,11 @@ async function deleteCreatorCard(serviceData, options = {}) {
 
     const creatorCard = await CreatorCard.findOne({ query: { slug: data.slug, creator_reference: data.creator_reference } });
     if(!creatorCard){
-      // TODO: throw error
+      throwAppError(CreatorCardMessages.SLUG_NOT_FOUND, ERROR_CODE.NF01);
+    }
+
+    if(creatorCard.deleted){
+      throwAppError(CreatorCardMessages.CARD_ALREADY_DELETED, ERROR_CODE.NF03);
     }
 
     await CreatorCard.deleteOne({ query: { _id: creatorCard._id }, options: { paranoid: true } });
@@ -38,7 +41,7 @@ async function deleteCreatorCard(serviceData, options = {}) {
       "access_code": creatorCard.access_code,
       "created": creatorCard.created,
       "updated": creatorCard.updated,
-      "deleted": creatorCard.deleted
+      "deleted": Date.now() // actual deletion time is not updated on creatorCard, would cost another network call
     };
 
   } catch (error) {

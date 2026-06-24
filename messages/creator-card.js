@@ -1,0 +1,12 @@
+module.exports = {
+  SLUG_ALREADY_TAKEN: 'The slug you provided is already taken. Please try a different one.',
+  ACCESS_CODE_REQUIRED: 'An access code is required for private access.',
+  ACCESS_CODE_ON_PUBLIC_CARD: 'Access code cannot be set on public cards.',
+  INVALID_URL: 'All URLs must start with http:// or https://.',
+  SLUG_NOT_FOUND: 'The slug you provided was not found. Please try a different one.',
+  CARD_IN_DRAFT_STATUS: 'The card is in draft status. Please publish it to make it accessible.',
+  ACCESS_CODE_REQUIRED_FOR_PRIVATE_CARD: 'An access code is required for private access.',
+  ACCESS_CODE_INCORRECT: 'The access code you provided is incorrect. Please try again.',
+  CARD_ALREADY_DELETED: 'The card you are trying to delete has already been deleted.',
+  INVALID_AMOUNT: 'The amount you provided is invalid. Please provide a positive integer.',
+};

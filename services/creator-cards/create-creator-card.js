@@ -1,8 +1,9 @@
 const validator = require('@app-core/validator');
 const { throwAppError, ERROR_CODE } = require('@app-core/errors');
 const { appLogger } = require('@app-core/logger');
-// const PaymentMessages = require('@app/messages/payment'); // Your message file
+const CreatorCardMessages = require('@app/messages/creator-card');
 const CreatorCard = require('@app/repository/creator-card');
+const generateULID = require('@app-core/randomness/ulid');
 
 const spec = `root {
   title string<trim|lengthBetween:3,100>
@@ -41,32 +42,55 @@ async function createCreatorCard(serviceData, options = {}) {
         .toLowerCase()
         .replace(" ", '-');
 
-      // TODO: if slug is either:
-      // 1. Already existing
-      // 2. shorter than 5 characters
-      // append a hyphen and a random 6-character alphanumeric suffix
-      
+      if(slug.length < 5){
+        slug = slug + '-' + generateULID().substring(0, 6);
+      }
+
+      let isSlugTaken = true;
+      // Iterate and add random suffix until slug is not taken
+      while(isSlugTaken){
+        let existingCreatorCard = await CreatorCard.findOne({ query: { slug } });
+        if(existingCreatorCard){
+          slug = slug + '-' + generateULID().substring(0, 6);
+        } else {
+          isSlugTaken = false;
+        }
+      }
+
+      appLogger.info({ slug }, 'slug-generated');
       data.slug = slug;
     } else {
       // check if slug is already taken;
-
-      const existingCreatorCard = await CreatorCard.findOne({ query: { slug: data.slug } });
+      let existingCreatorCard = await CreatorCard.findOne({ query: { slug: data.slug } });
       if(existingCreatorCard){
-        // TODO: throw error
+        appLogger.error({ slug: data.slug }, 'slug-already-taken');
+        throwAppError(CreatorCardMessages.SLUG_ALREADY_TAKEN, ERROR_CODE.SL01);
       }
     }
 
     if(data.access_type === 'private' && !data.access_code){
-      // TODO: throw error
+      throwAppError(CreatorCardMessages.ACCESS_CODE_REQUIRED, ERROR_CODE.AC01);
     }
 
-    const validUrls = data.links.every(link => {
-      return link.url.startsWith('http://') || link.url.startsWith('https://');
-    });
-
-    if(!validUrls){
-      // TODO: throw error
+    if(data.access_type === 'public' && data.access_code){
+      throwAppError(CreatorCardMessages.ACCESS_CODE_ON_PUBLIC_CARD, ERROR_CODE.AC04);
     }
+    
+    data.links.forEach(link => {
+      if(!link.url.startsWith('http://') && !link.url.startsWith('https://')){
+        throwAppError(CreatorCardMessages.INVALID_URL, ERROR_CODE.VALIDATIONERR);
+      }
+    })
+
+    data.service_rates?.rates?.forEach(rate => {
+      if(!Number.isInteger(rate.amount)){
+        throwAppError(CreatorCardMessages.INVALID_AMOUNT, ERROR_CODE.VALIDATIONERR);
+      }
+
+      if(rate.amount < 0){
+        throwAppError(CreatorCardMessages.INVALID_AMOUNT, ERROR_CODE.VALIDATIONERR);
+      }
+    })
 
     const creatorCard = await CreatorCard.create(data);
 
