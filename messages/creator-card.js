@@ -7,7 +7,6 @@ module.exports = {
   CARD_IN_DRAFT_STATUS: 'The card is in draft status. Please publish it to make it accessible.',
   ACCESS_CODE_REQUIRED_FOR_PRIVATE_CARD: 'An access code is required to access a private card.',
   ACCESS_CODE_INCORRECT: 'The access code you provided is incorrect. Please try again.',
-  CARD_ALREADY_DELETED: 'The card you are trying to delete has already been deleted.',
   INVALID_AMOUNT: 'The amount you provided is invalid. Please provide a positive integer.',
   NO_SERVICE_RATES: 'No service rates provided. Please provide at least one service rate.',
   INVALID_SLUG: 'The slug you provided contains invalid characters. Please use only letters, numbers, dashes, and underscores.',
